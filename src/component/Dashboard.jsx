@@ -1,34 +1,53 @@
 import React from 'react';
 import './Dashboard.css';
-import { Link } from 'react-router-dom';
+import { DataGrid} from "@mui/x-data-grid";
+import { getCustomer } from './functions.js';
+import { Button } from '@mui/material';
 
 function Dashboard() {
-    // Sample data for recent orders and sales summary (you can replace this with actual data)
-    const recentOrders = [
-        { orderNumber: '12345', customer: 'John Doe', totalAmount: 50.0 },
-        { orderNumber: '12346', customer: 'Jane Smith', totalAmount: 75.0 },
+    const [selection, setSelection] = React.useState([]);
+    const [recentOrders, setRecentOrders] = React.useState([
+        { id: 0, orderNumber: '12345', customer: 'John Doe', totalAmount: 50.0, status: 'Received' },
+        { id: 1, orderNumber: '12346', customer: 'Jane Smith', totalAmount: 75.0, status: 'Received' },
         // Add more orders as needed
-    ];
+    ]);
 
     const totalSales = recentOrders.reduce((total, order) => total + order.totalAmount, 0);
 
+    const columns = [
+        { field: 'orderNumber', headerName: 'order number', width: 150 },       
+        { field: 'totalAmount', headerName: 'total amount', width: 150 },
+        { field: 'customer', headerName: 'customer email', width: 150 },
+        { field: 'status', headerName: 'status', width: 150 },
+    ];
+
+    //const customer = getCustomer()
+
+    const handleSubmit = () => {
+        const updatedOrders = [...recentOrders];
+        for (let i = 0; i < selection.length; i++) {
+            updatedOrders[selection[i]].status = 'Completed';
+        }
+        setRecentOrders(updatedOrders);
+        setSelection([]);
+    };
+
     return (
         <div className="dashboard-container">
-            <h2>Dashboard</h2>
-            <Link to="/home">Go to Home</Link>
-            {/* Recent Orders Section */}
+            <h2>Orders</h2>
             <div className="dashboard-section">
-                <h3>Recent Orders</h3>
-                <ul>
-                    {recentOrders.map((order, index) => (
-                        <li key={index}>
-                            Order #{order.orderNumber} by {order.customer} - ${order.totalAmount}
-                        </li>
-                    ))}
-                </ul>
+                <div style={{ width: '100%' }}>
+                    <div style={{ height: 350, width: '100%' }}>
+                        <DataGrid checkboxSelection rows={recentOrders} columns={columns}
+                            onRowSelectionModelChange={(newSelectionModel) => {
+                                setSelection(newSelectionModel)
+                            }}/>
+                    </div>
+                    <button type="submit" className="sign-in-button" onClick={(e) => handleSubmit(e)}>
+                        Complete
+                    </button>
+                </div>
             </div>
-
-            {/* Sales Summary Section */}
             <div className="dashboard-section">
                 <h3>Sales Summary</h3>
                 <p>Total Sales: ${totalSales.toFixed(2)}</p>
