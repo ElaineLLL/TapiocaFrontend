@@ -1,71 +1,87 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import './SignIn.css';
 import { Navigate } from 'react-router-dom';
+import { useAuth } from './AuthContext';
 
-class SignIn extends Component {
-    constructor() {
-        super();
-        this.state = {
-            email: '',
-            password: '',
-            isAuthenticated: false,
-        };
-    }
+function SignIn() {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [userType, setUserType] = useState('');
+    const auth = useAuth();
 
-    handleChange = (event) => {
+    const handleChange = (event) => {
         const { name, value } = event.target;
-        this.setState({
-            [name]: value,
-        });
+        if (name === 'email') {
+            setEmail(value);
+        } else if (name === 'password') {
+            setPassword(value);
+        }
     };
 
-    handleSubmit = (event) => {
+    const handleSubmit = (event, userType) => {
         event.preventDefault();
         // Authentication logic here (e.g., API requests, validation)
 
         // For this example, we'll set isAuthenticated to true when the form is submitted.
-        this.setState({
-            isAuthenticated: true,
-        });
+        setIsAuthenticated(true);
+        setUserType(userType);
+
+        const userData = {
+            email: email, // Replace with actual email obtained from authentication
+            type: userType,
+        };
+        auth.signIn(userData);
+
     };
 
-    render() {
-        const { email, password, isAuthenticated } = this.state;
-
-        if (isAuthenticated) {
-            return <div className="sign-in-success"><Navigate to="/home" />
-            </div>;
+    if (isAuthenticated) {
+        if (userType === 'staff') {
+            return <div className="sign-in-success"><Navigate to="/Dashboard" /></div>;
+        } else if (userType === 'customer') {
+            return <div className="sign-in-success"><Navigate to="/customerhome" /></div>;
+        } else {
+            return <div className="sign-in-success"><Navigate to="/storage" /></div>;
         }
-
-        return (
-            <div className="sign-in-container">
-                <h2>Sign In</h2>
-                <form onSubmit={this.handleSubmit}>
-                    <div className="form-group">
-                        <label>Email:</label>
-                        <input
-                            type="email"
-                            name="email"
-                            value={email}
-                            onChange={this.handleChange}
-                        />
-                    </div>
-                    <div className="form-group">
-                        <label>Password:</label>
-                        <input
-                            type="password"
-                            name="password"
-                            value={password}
-                            onChange={this.handleChange}
-                        />
-                    </div>
-                    <button type="submit" className="sign-in-button">
-                        Sign In
-                    </button>
-                </form>
-            </div>
-        );
     }
+
+    return (
+        <div className="sign-in-container">
+            <h2>Sign In</h2>
+            <form onSubmit={handleSubmit}>
+                <div className="form-group">
+                    <label>Email:</label>
+                    <input
+                        type="email"
+                        name="email"
+                        value={email}
+                        onChange={handleChange}
+                    />
+                </div>
+                <div className="form-group">
+                    <label>Password:</label>
+                    <input
+                        type="password"
+                        name="password"
+                        value={password}
+                        onChange={handleChange}
+                    />
+                </div>
+                &nbsp;
+                <button type="submit" className="sign-in-button" onClick={(e) => handleSubmit(e, 'customer')}>
+                    Sign In As Customer
+                </button>
+                &nbsp;
+                <button type="submit" className="sign-in-button" onClick={(e) => handleSubmit(e, 'staff')}>
+                    Sign In As Staff
+                </button>
+                &nbsp;
+                <button type="submit" className="sign-in-button" onClick={(e) => handleSubmit(e, 'manager')}>
+                    Sign In As Manager
+                </button>
+            </form>
+        </div>
+    );
 }
 
 export default SignIn;
